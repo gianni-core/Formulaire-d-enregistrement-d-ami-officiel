@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outil de Déchiffrement</title>
+    <title>Outil de Déchiffrement Officiel 🔍</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -19,54 +19,89 @@
         body { font-family: 'Open Sans', sans-serif; margin: 0; padding: 20px; background: var(--background-gradient); display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-color); line-height: 1.6; }
         .container { background: var(--card-background); padding: 40px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); max-width: 550px; width: 100%; text-align: center; box-sizing: border-box; }
         h1 { color: var(--primary-color); margin-bottom: 25px; font-weight: 700; font-size: 2em; }
+        
+        .data-info { 
+            background: #f9f9f9; 
+            border-left: 4px solid var(--primary-color); 
+            padding: 15px; 
+            margin-bottom: 25px; 
+            font-size: 0.85em; 
+            text-align: left; 
+            color: #666;
+        }
+
         label { display: block; text-align: left; margin-bottom: 8px; font-weight: 600; color: var(--secondary-color); font-size: 0.95em; }
         input[type="text"] { width: calc(100% - 20px); padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; box-sizing: border-box; transition: border-color 0.3s ease; }
         input[type="text"]:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.2); }
+        
         button { background-color: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1em; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease, transform 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
         button:hover { background-color: var(--secondary-color); transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
+        
         .alert-message { margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 0.95em; display: none; }
         .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
         .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
-        pre { background: #f4f4f4; padding: 15px; border-radius: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: var(--secondary-color); font-size: 1.05em; word-break: break-all; border: 1px dashed #ccc; text-align: left; }
+        
+        pre { background: #f4f4f4; padding: 15px; border-radius: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: var(--secondary-color); font-size: 0.95em; word-break: break-all; border: 1px dashed #ccc; text-align: left; margin-top: 20px; }
+        h2 { font-size: 1.2em; color: var(--primary-color); margin-top: 25px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Outil de Déchiffrement</h1>
+        <h1><i class="fas fa-unlock-alt"></i> Déchiffrement</h1>
+
+        <div class="data-info">
+            <i class="fas fa-info-circle"></i> <strong>Note :</strong> Cet outil permet de lire le contenu d'un code secret d'ami, incluant les informations personnelles et l'adresse IP enregistrée au moment de la création.
+        </div>
+
         <label for="inputCode">Entrer le code secret :</label>
         <input type="text" id="inputCode" placeholder="Colle le code ici" required>
-        <button onclick="decryptCode()"><i class="fas fa-sync-alt"></i> Déchiffrer les réponses</button>
+        
+        <button onclick="decryptCode()"><i class="fas fa-sync-alt"></i> Déchiffrer les informations</button>
+        
         <div id="resultMessage" class="alert-message"></div>
         <div id="resultOutput"></div>
     </div>
 
     <script>
         function decryptCode() {
-            const code = document.getElementById('inputCode').value;
+            const code = document.getElementById('inputCode').value.trim();
             const resultMessageDiv = document.getElementById('resultMessage');
             const resultOutputDiv = document.getElementById('resultOutput');
             
             resultMessageDiv.style.display = 'none';
             resultOutputDiv.innerHTML = '';
             
+            if (!code) {
+                resultMessageDiv.className = 'alert-message alert-error';
+                resultMessageDiv.innerHTML = 'Veuillez coller un code avant de valider.';
+                return;
+            }
+            
             try {
-                const json = atob(code);
+                // Décodage Base64 avec support des caractères spéciaux (UTF-8)
+                const json = decodeURIComponent(escape(atob(code)));
                 const data = JSON.parse(json);
 
                 resultMessageDiv.className = 'alert-message alert-success';
                 resultMessageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Code déchiffré avec succès !';
                 
                 resultOutputDiv.innerHTML = `
-                    <h2>Informations déchiffrées :</h2>
-                    <pre>Nom de famille: ${data.nom || 'Non spécifié'}
-Prénom: ${data.prenom || 'Non spécifié'}
-Date de naissance: ${data.dob || 'Non spécifié'}</pre>
+                    <h2>Résultats :</h2>
+                    <pre>
+<b>👤 Identité</b>
+Nom : ${data.nom || 'Inconnu'}
+Prénom : ${data.prenom || 'Inconnu'}
+Naissance : ${data.dob || 'Non renseignée'}
+
+<b>🌐 Données de connexion</b>
+Adresse IP : ${data.ip_address || 'Non enregistrée'}
+Généré le : ${data.generated_at || 'Date inconnue'}
+                    </pre>
                 `;
             } catch (e) {
                 resultMessageDiv.className = 'alert-message alert-error';
-                resultMessageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Code invalide ou corrompu ! Veuillez vérifier votre code.';
-                console.error("Erreur de décodage ou de parsing :", e);
+                resultMessageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Code invalide ! Assure-toi d\'avoir copié tout le code sans espaces supplémentaires.';
+                console.error("Erreur :", e);
             }
         }
     </script>
