@@ -20,63 +20,122 @@
         body { font-family: 'Open Sans', sans-serif; margin: 0; padding: 20px; background: var(--background-gradient); display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-color); line-height: 1.6; }
         .container { background: var(--card-background); padding: 40px; border-radius: var(--border-radius); box-shadow: var(--box-shadow); max-width: 550px; width: 100%; text-align: center; box-sizing: border-box; }
         h1 { color: var(--primary-color); margin-bottom: 25px; font-weight: 700; font-size: 2em; }
-        p { margin-bottom: 25px; color: #555; }
+        p { margin-bottom: 20px; color: #555; }
+        
+        /* Style pour les mentions de données */
+        .data-info { 
+            background: #f9f9f9; 
+            border-left: 4px solid var(--primary-color); 
+            padding: 15px; 
+            margin-bottom: 25px; 
+            font-size: 0.85em; 
+            text-align: left; 
+            color: #666;
+        }
+
         hr { border: none; border-top: 1px dashed #ddd; margin: 30px 0; }
         label { display: block; text-align: left; margin-bottom: 8px; font-weight: 600; color: var(--secondary-color); font-size: 0.95em; }
         input[type="text"], input[type="date"] { width: calc(100% - 20px); padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; box-sizing: border-box; transition: border-color 0.3s ease; }
         input[type="text"]:focus, input[type="date"]:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.2); }
+        
         button { background-color: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 1.1em; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease, transform 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 10px; }
         button:hover { background-color: var(--secondary-color); transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
         .alert-message { margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 0.95em; display: none; }
         .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; display: block; }
         .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; display: block; }
-        #codeField { margin-top: 25px; background: #f0f0f0; padding: 15px; border-radius: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: var(--secondary-color); font-size: 1.05em; word-break: break-all; border: 1px dashed #ccc; text-align: left; display: none; }
+        
+        #codeField { margin-top: 25px; background: #f0f0f0; padding: 15px; border-radius: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; color: var(--secondary-color); font-size: 0.95em; word-break: break-all; border: 1px dashed #ccc; text-align: left; display: none; }
         #codeField.show { display: block; }
-        .fa-key, .fa-sync-alt, .fa-gift, .fa-check-circle, .fa-exclamation-circle { margin-right: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-heart"></i> Questionnaire d’Enregistrement d’Ami Officiel</h1>
-        <p>Merci de bien vouloir remplir ces informations. Elles serviront uniquement à compléter votre Fiche d’Amitié officielle.</p>
+        <h1><i class="fas fa-heart"></i> Fiche d’Amitié</h1>
+        
+        <div class="data-info">
+            <i class="fas fa-user-shield"></i> <strong>Utilisation des données :</strong> Les informations saisies (nom, prénom, date de naissance) ainsi que votre <b>adresse IP</b> sont encodées localement dans votre code secret. Aucune donnée n'est stockée sur nos serveurs.
+        </div>
+
+        <p>Remplissez le formulaire pour générer votre identifiant unique.</p>
         <hr>
+        
         <form id="friendForm">
             <label for="nom">Nom de famille :</label>
             <input type="text" id="nom" placeholder="Ex: Dupont" required>
+            
             <label for="prenom">Prénom :</label>
             <input type="text" id="prenom" placeholder="Ex: Marie" required>
+            
             <label for="dob">Date de naissance :</label>
             <input type="date" id="dob" required>
-            <button type="button" onclick="generateCode()"><i class="fas fa-gift"></i> Générer mon code secret</button>
+            
+            <button type="button" id="btnGenerate" onclick="generateCode()"><i class="fas fa-gift"></i> Générer mon code secret</button>
         </form>
+
         <div id="codeField"></div>
         <div id="generateMessage" class="alert-message"></div>
     </div>
 
     <script>
-        function generateCode() {
+        // Fonction pour récupérer l'IP de l'utilisateur
+        async function getIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return "IP non disponible";
+            }
+        }
+
+        async function generateCode() {
             const nom = document.getElementById('nom').value;
             const prenom = document.getElementById('prenom').value;
             const dob = document.getElementById('dob').value;
             const generateMessageDiv = document.getElementById('generateMessage');
+            const btn = document.getElementById('btnGenerate');
 
             if (!nom || !prenom || !dob) {
                 generateMessageDiv.className = 'alert-message alert-error';
-                generateMessageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Veuillez remplir tous les champs du formulaire.';
-                document.getElementById('codeField').classList.remove('show');
+                generateMessageDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Veuillez remplir tous les champs.';
                 return;
             }
 
-            const data = { nom, prenom, dob };
+            // Désactive le bouton pendant le chargement
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Récupération de l\'IP...';
+
+            const userIP = await getIP();
+
+            // Création de l'objet data incluant l'IP
+            const data = { 
+                nom: nom, 
+                prenom: prenom, 
+                dob: dob, 
+                ip_address: userIP,
+                generated_at: new Date().toLocaleString()
+            };
+
+            // Encodage en Base64
             const json = JSON.stringify(data);
-            const code = btoa(json);
-            
+            const code = btoa(unescape(encodeURIComponent(json))); 
+
+            // Affichage du résultat
             document.getElementById('codeField').classList.add('show');
-            document.getElementById('codeField').innerHTML = `Ton code secret : <strong>${code}</strong><br><small>Garde-le précieusement pour retrouver tes infos !</small>`;
+            document.getElementById('codeField').innerHTML = `
+                <strong><i class="fas fa-key"></i> Ton code secret :</strong><br>
+                <code style="word-wrap: break-word;">${code}</code><br><br>
+                <small><i class="fas fa-info-circle"></i> Ce code contient tes infos + ton IP (${userIP}).</small>
+            `;
             
             generateMessageDiv.className = 'alert-message alert-success';
             generateMessageDiv.innerHTML = '<i class="fas fa-check-circle"></i> Code généré avec succès !';
+            
+            // Réinitialisation du bouton
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-gift"></i> Générer mon code secret';
         }
     </script>
 </body>
